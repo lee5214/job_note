@@ -1,0 +1,77 @@
+import xlsxwriter
+import csv
+import sys
+from itertools import islice
+def_xlsx_name_save_to='new.xlsx'
+def_csv_file='cong.csv'
+def_ContackName_colNum=9
+
+
+workbook = xlsxwriter.Workbook(def_xlsx_name_save_to)
+worksheet = workbook.add_worksheet()
+worksheet.set_row(0, 30)
+worksheet.set_column('A:T', 24)
+worksheet.set_column('C:C',40)
+worksheet.set_column('S:S',70)
+#set up header formats
+header_format1 = workbook.add_format({'align': 'center','valign': 'vcenter','bg_color': '#FFE598'})
+header_format2 = workbook.add_format({'align': 'center','valign': 'vcenter','bg_color': '#C5E0B3'})
+header_format3 = workbook.add_format({'align': 'center','valign': 'vcenter','bg_color': '#B4C6E7'})
+worksheet.merge_range('A1:D1', 'Contack Personal Information', header_format1)
+worksheet.merge_range('G1:L1', 'Contack Personal Information', header_format2)
+worksheet.merge_range('M1:R1', 'Contack Personal Information', header_format3)
+#set up sections
+cell_format = workbook.add_format({'align':'center'})
+section=['Last Name','First Name','Company','Title','Willing to share','Willing to introduce',
+		'Work Phone','Work Email','Work Street','Work City','Work State','Work Zip','Personal Street',
+		'Personal City','Personal State','Personal Zip','Mobile Phone','Personal Email','Note',
+		'Note Category']
+for n in range(0,len(section)):
+	worksheet.write(1,n,section[n],cell_format)
+
+#csv
+
+csv_data=csv.reader(file(def_csv_file))
+r= islice(csv_data,2,None) #ignore first 2 rows
+exsl_row=2
+for row in r:
+	if not row[def_ContackName_colNum]:#ignore and continue if no name
+		continue
+	else:
+		name=row[def_ContackName_colNum].split(' ')
+		first_name=name[0]
+		last_name=name[len(name)-1]
+		#mid_name=name[1] if len(name)>2 else ''
+###############below is the setting for section column in csv
+		def_company=row[0]
+		def_title=row[10]
+		def_willing_to_share='yes'
+		def_willing_to_introduce='No'
+		def_work_phone=row[7]
+		def_work_email=''
+		def_work_street=row[1]
+		def_work_city=row[2]
+		def_work_state=row[3]
+		def_work_zip=row[4].split('-')[0]#strip last 4 digits
+		def_personal_street=''
+		def_personal_city=''
+		def_personal_state=''
+		def_personal_zip=''
+		def_mobile_phone=''
+		def_personal_email=''
+		def_note=row[14]
+		#def_note_category=''
+		#write data for one line
+		csv_data=[last_name,first_name,def_company,def_title,def_willing_to_share,def_willing_to_introduce,
+				def_work_phone,def_work_email,def_work_street,def_work_city,
+				def_work_state,def_work_zip,def_personal_street,def_personal_city,def_personal_state,
+				def_personal_zip,def_mobile_phone,def_personal_email,def_note]
+		for n in range(0,len(csv_data)):
+			worksheet.write(exsl_row,n,csv_data[n],cell_format)
+		#
+
+		dropdown_col='T'+str(exsl_row+1)
+		print 'row: '+str(exsl_row-1)
+		worksheet.data_validation(dropdown_col,{'validate':'list','source':['public','private']})
+		exsl_row+=1
+workbook.close()
