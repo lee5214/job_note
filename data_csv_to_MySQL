@@ -1,0 +1,60 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+import csv
+import MySQLdb
+import sys
+from itertools import islice
+#Default Excel configure
+def_csv_file='cong - sample import file.csv'
+def_ContackName_colNum=9
+#Default DB configure
+def_host='localhost'
+def_user='root'
+def_password=''
+def_database='db'
+####connect to database####
+try:
+	db=MySQLdb.connect(
+		host=def_host,
+		user=def_user,
+		passwd=def_password,
+		db=def_database
+	)
+except Exception as e:
+	sys.exit("The database doesn't exist")
+cursor=db.cursor()
+####read from csv file####
+csv_data=csv.reader(file(def_csv_file))
+r= islice(csv_data,2,None) #ignore first 2 rows
+for row in r:
+	if not row[def_ContackName_colNum]:#ignore and continue if no name
+		continue
+	else:
+		name=row[def_ContackName_colNum].split(' ')
+		first_name=name[0]
+		last_name=name[len(name)-1]
+		mid_name=name[1] if len(name)>2 else ''
+		address=row[1]
+		state=row[3]
+		zp=row[4]
+		phone=row[7]
+
+		#check if the table under this name exists, delete it if yes, then create a new one
+		'''cursor.execute("DROP TABLE IF EXISTS Contact")
+		create = """CREATE TABLE Contact(
+			      	Contact_First_Name CHAR(20),
+			      	Contact_Middle_Name CHAR(20),
+			      	Contact_Last_Name CHAR(20),
+			      	Contact_Address CHAR(40), 
+			      	Contact_State CHAR(4), 
+			      	Contact_Zip CHAR(10), 
+			      	Contact_Phone CHAR(10))"""
+        cursor.execute(create)
+        '''
+        cursor.execute("""INSERT INTO Contact (Contact_First_Name, Contact_Middle_Name, Contact_Last_Name, 
+        	Contact_Address, Contact_State, Contact_Zip, Contact_Phone)
+        VALUES(%s, %s, %s, %s, %s, %s, %s)""", (first_name, mid_name, last_name, address, state, zp, phone))
+####commit and close connection####
+db.commit()
+db.close()
+print"Done"
