@@ -1,5 +1,5 @@
 # job_note
-some of my open source code for work
+some of my code for work
 
-due to confidential reasons, I'm not gonna show all the code.
-Here just some short codes I wrote to solve problems and get job done.
+due to confidential reasons, I can't show the entire source code.
+Here's just a short note I wrote for reuse. 
